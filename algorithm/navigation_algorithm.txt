@@ -1,0 +1,63 @@
+main(){
+  start_navigation
+  forward_navigation
+}
+
+FUNC *send_message_arduino(char *data)
+
+FUNC start_navigation
+  send_message_arduino(switch)
+  switch = receive_message_arduino()
+  start_timer
+
+  if(switch == “1”)
+  	turn_engine(engine_a, 1)
+  	turn_engine(engine_b, 1)
+  else
+  	error
+
+FUNC turn_engine(engine, speed)
+  send_message_arduino(engine,speed)
+
+FUNC get_infra_value(infra)
+  send_message_arduino(which_infra)
+  infra_stats = receive_message_arduino()
+  return infra_stats
+
+FUNC forward_navigation
+	while(!complete_line_drill){
+  	while(total_moved < drill_distance){
+      sonar_a = get_infra_value(sonar_a)
+      sonar_b = get_infra_value(sonar_b)
+
+      if(sonar_a == NEAR_WALL){
+        turn_engine(engine_a, 1)
+        turn_engine(engine_b, 2)
+      }
+      else if
+
+  	  turn_engine()
+
+    total_moved = check_total_moved()
+    }
+    start_drill()
+  }
+
+FUNC check_total_moved(){
+  send_message_arduino(which_infra)
+  infra_stats = receive_message_arduino()
+  return infra_stats
+}
+
+FUNC return_home
+	// timer based function
+
+FUNC turn_navigation
+
+FUNC start_drill
+
+FUNC stop_drill
+
+FUNC count_row
+
+FUNC stop_vehicle

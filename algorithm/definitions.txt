@@ -1,0 +1,12 @@
+Definitions:
+  sonar_a = front sonar
+  sonar_b = back sonar
+
+Speed:
+  stop_speed = 0 km/h
+  forward_speed = 1 km/h
+  turn_speed = 2 km/h
+  
+Engine:
+  engine_a = left engine
+  engine_b = right engine
