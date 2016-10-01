@@ -1,8 +1,8 @@
 // 5 VDC
 #include <SoftwareSerial.h>
-#include <Adafruit_GPS.h>
+#include <Adafruit_GPS.h> // download at https://github.com/adafruit/Adafruit_GPS/archive/master.zip
 
-SoftwareSerial mySerial(3,2);
+SoftwareSerial mySerial(3,2); // TX pin, RX pin
 Adafruit_GPS GPS(&mySerial);
 
 String NMEA1;
@@ -13,7 +13,7 @@ void setup() {
   Serial.begin(115200);
   GPS.begin(9600);
   GPS.sendCommand("$PGCND,33,0*6D"); // Turn off antenna update nuisance data
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_10HZ); // 1 Hz
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz for better stability
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // Request GGA and RMC sentences only
   delay(1000);
 }
@@ -56,9 +56,9 @@ void readGPS() {
     Serial.print(", "); 
     Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
     Serial.print("Location (in degrees, works with Google Maps): ");
-    Serial.print(GPS.latitudeDegrees, 4);
+    Serial.print(GPS.latitudeDegrees, 6);
     Serial.print(", "); 
-    Serial.println(GPS.longitudeDegrees, 4);
+    Serial.println(GPS.longitudeDegrees, 6);
     
     Serial.print("Speed (knots): "); Serial.println(GPS.speed);
     Serial.print("Angle: "); Serial.println(GPS.angle);
