@@ -1,11 +1,12 @@
 /*
- * Pins used: A0, 2, 3, 4, 5, 8, 9
+ * Pins used: A0, A4, A5, 2, 3, 4, 5, 8, 9
  * 
  */
 
 #include <Ultrasonic.h>
 #include <SoftwareSerial.h>
 #include <Adafruit_GPS.h>
+#include <Wire.h>
 
 #define DEBUG // print meaningful messages to the Serial if defined
 
@@ -54,6 +55,15 @@ const int gps_rx_pin = 2;
 SoftwareSerial gpsSerial(gps_tx_pin, gps_rx_pin);
 Adafruit_GPS GPS(&gpsSerial);
 
+/***************** IMU section ***********************************/
+// IMU power: 5 VDC
+// IMU pins
+const int sda_pin = A4;
+const int scl_pin = A5;
+const int MPU = 0x68;
+int AcX, AcY, AcZ, Tmp, GyX, GyY, GyZ;
+float temp_celsius;
+
 void setup() {
   // higrometer setup
   pinMode(higro_pin, INPUT);
@@ -63,6 +73,14 @@ void setup() {
   GPS.sendCommand("$PGCND,33,0*6D"); // Turn off antenna update nuisance data
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz for better stability
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // Request GGA and RMC sentences only
+
+  // IMU setup
+  Wire.begin();
+  Wire.beginTransmission(MPU);
+  Wire.write(0x6B);
+
+  Wire.write(0);
+  Wire.endTransmission(true);
   
   Serial.begin(9600);
 }
@@ -123,7 +141,18 @@ void read_air() { // 1 - air umidity reading
 }
 
 void read_temp() { // 2 - temperature reading
-  Serial.println("(to be implemented) ambient temp");
+  get_imu_data();
+# ifdef DEBUG
+  Serial.print("Temp: "); Serial.println(temp_celsius);
+# else
+  union {
+    float f_tmp;
+    uint32_t i_tmp;
+  } tmp;
+  tmp.f_tmp = temp_celsius;
+  for (int shift = 0; shift <= 24; shift += 8)
+    Serial.write((tmp.i_tmp >> shift) & 0xFF);
+# endif
 }
 
 void read_sonar (int sonar_id) { // 3 e 4 - front and rear sonar reading
@@ -148,12 +177,53 @@ void read_sonar (int sonar_id) { // 3 e 4 - front and rear sonar reading
 # endif
 }
 
+void get_imu_data() {
+  Wire.beginTransmission(MPU);
+  Wire.write(0x3B);
+  Wire.endTransmission(false);
+  Wire.requestFrom(MPU, 14, true);
+
+  AcX = Wire.read() << 8 | Wire.read();
+  AcY = Wire.read() << 8 | Wire.read();
+  AcZ = Wire.read() << 8 | Wire.read();
+  Tmp = Wire.read() << 8 | Wire.read();
+  GyX = Wire.read() << 8 | Wire.read();
+  GyY = Wire.read() << 8 | Wire.read();
+  GyZ = Wire.read() << 8 | Wire.read();
+
+  temp_celsius = Tmp/340.00 + 36.53;
+}
+
 void read_accel () { // 5 - accelerometer reading
-  Serial.println("(to be implemented) accelerometer");
+  get_imu_data();
+# ifdef DEBUG
+  Serial.print("Accel x: "); Serial.println(AcX);
+  Serial.print("Accel y: "); Serial.println(AcY);
+  Serial.print("Accel z: "); Serial.println(AcZ);
+# else
+  for(int shift = 0; shift <= 8; shift += 8)
+    Serial.write((AcX >> shift) & 0xFF);
+  for(int shift = 0; shift <= 8; shift += 8)
+    Serial.write((AcY >> shift) & 0xFF);
+  for(int shift = 0; shift <= 8; shift += 8)
+    Serial.write((AcZ >> shift) & 0xFF);
+# endif
 }
 
 void read_gyro() { // 6 - gyroscope reading
-  Serial.println("(to be implemented) gyroscope");
+  get_imu_data();
+# ifdef DEBUG
+  Serial.print("Gyro X: "); Serial.println(GyX);
+  Serial.print("Gyro Y: "); Serial.println(GyY);
+  Serial.print("Gyro Z: "); Serial.println(GyZ);
+# else
+  for(int shift = 0; shift <= 8; shift += 8)
+    Serial.write((GyX >> shift) & 0xFF);
+  for(int shift = 0; shift <= 8; shift += 8)
+    Serial.write((GyY >> shift) & 0xFF);
+  for(int shift = 0; shift <= 8; shift += 8)
+    Serial.write((GyZ >> shift) & 0xFF);
+# endif
 }
 
 void read_gps() { // 7 - GPS reading
