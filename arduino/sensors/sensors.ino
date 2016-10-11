@@ -1,5 +1,5 @@
 /*
- * Pins used: A0, A4, A5, 2, 3, 4, 5, 8, 9
+ * Pins used: A0, A4, A5, 2, 3, 4, 5, 7, 8, 9
  * 
  */
 
@@ -7,6 +7,7 @@
 #include <SoftwareSerial.h>
 #include <Adafruit_GPS.h>
 #include <Wire.h>
+#include <DHT.h>
 
 #define DEBUG // print meaningful messages to the Serial if defined
 
@@ -64,6 +65,14 @@ const int MPU = 0x68;
 int AcX, AcY, AcZ, Tmp, GyX, GyY, GyZ;
 float temp_celsius;
 
+/**************** DHT22 section *********************************/
+// DHT22 power: 3V3 or 3V
+// DHT type and pins
+const int dht_type = DHT22;
+const int dht_pin = 7;
+
+DHT dht(dht_pin, dht_type);
+
 void setup() {
   // higrometer setup
   pinMode(higro_pin, INPUT);
@@ -81,6 +90,9 @@ void setup() {
 
   Wire.write(0);
   Wire.endTransmission(true);
+
+  // DHT22 setup
+  dht.begin();
   
   Serial.begin(9600);
 }
@@ -137,19 +149,36 @@ void read_higro() { // 0 - leitura da umidade do solo
 }
 
 void read_air() { // 1 - air umidity reading
-  Serial.println("(to be implemented) air umidity");
+  float h = dht.readHumidity();
+  while (isnan(h))
+    h = dht.readHumidity();
+# ifdef DEBUG
+  Serial.print("Air umidity: ");
+  Serial.print(h, 2);
+  Serial.println(" %");
+# else
+  union {
+    float f_hum;
+    uint32_t i_hum;
+  } hum;
+  hum.f_hum = h;
+  for (int shift = 0; shift <= 24; shift += 8)
+    Serial.write((hum.i_hum >> shift) & 0xFF);
+# endif
 }
 
 void read_temp() { // 2 - temperature reading
-  get_imu_data();
+  float t = dht.readTemperature();
+  while (isnan(t))
+    t = dht.readTemperature();
 # ifdef DEBUG
-  Serial.print("Temp: "); Serial.println(temp_celsius);
+  Serial.print("Temp: "); Serial.println(t);
 # else
   union {
     float f_tmp;
     uint32_t i_tmp;
   } tmp;
-  tmp.f_tmp = temp_celsius;
+  tmp.f_tmp = t;
   for (int shift = 0; shift <= 24; shift += 8)
     Serial.write((tmp.i_tmp >> shift) & 0xFF);
 # endif
