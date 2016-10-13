@@ -1,6 +1,31 @@
 /*
  * Pins used: A0, A4, A5, 2, 3, 4, 5, 7, 8, 9
+ * BAUD rate: 9600
  * 
+ * Devices, pins and power:
+ *
+ *   higrometer (3V3 or 5V):
+ *   - Analog pin: A0
+ *
+ *   DHT22 (3V3 or 5V):
+ *   - SIG pin: 7
+ *
+ *   sonar front (5V):
+ *   - TRIG: 4
+ *   - ECHO: 5
+ *
+ *   sonar rear (5V):
+ *   - TRIG: 8
+ *   - ECHO: 9
+ *
+ *   IMU (5V):
+ *   - SDA: A4
+ *   - SCL: A5
+ *
+ *   GPS (5V):
+ *   - TX: 3
+ *   - RX: 2
+ *
  */
 
 #include <Ultrasonic.h>
@@ -9,7 +34,7 @@
 #include <Wire.h>
 #include <DHT.h>
 
-#define DEBUG // print meaningful messages to the Serial if defined
+#undef DEBUG // print meaningful messages to the Serial if defined
 
 #ifdef DEBUG
 # define ZERO  '0'
