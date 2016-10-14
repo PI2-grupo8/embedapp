@@ -1,5 +1,7 @@
 #include "rasp_uart.h"
 #include <time.h>
+#include <stdbool.h>
+
 #define MOVE_FORWARD "\x00"
 #define STOP "\x01"
 #define PERFORM_MEASUREMENT "\x02"
@@ -9,94 +11,77 @@
 #define SENSOR_GPS "\x06"
 #define SWITCH "\x07"
 
-void send_message_arduino(char *sensor){
-    struct uart_data buffer_send = {
-        sensor, strlen(sensor)
-    };
+void complete_line(int *lines_completed, int measurement_distance){
+    // bool complete_line_drill = false;
+    // int total_line_drills =
+    // int current_total_drills = 0;
 
-    buffer_send.data = sensor;
-    buffer_send.length = 1;
+    // while(!complete_line_drill){
+    //     while(total_moved < measurement_distance){
+    //         total_moved = total_moved_in_line();
+    //     }
+    //     start_drill();
+    // }
 
-    uart_send(&buffer_send);
-    printf("Message send: %s\n", buffer_send.data);
+    (*lines_completed)++;
 }
 
-void receive_message_arduino(){
-    char texto[50] = "Teste";
+void make_first_curve(){
 
-    struct uart_data buffer_recv = {
-        (char*) malloc (strlen(texto) * sizeof (char)), strlen(texto)
-    };
-
-    buffer_recv.length = 4;
-
-    uart_recv(&buffer_recv);
-    buffer_recv.data[buffer_recv.length] = 0;
-    printf("Received data: %s\n", buffer_recv.data);
 }
 
-void turn_engine(char *engine, int speed){
-    // send_message_arduino(engine, speed);
+void make_second_curve(){
+
 }
 
-void stop_vehicle(){
-    turn_engine("engine_a", 0);
-    turn_engine("engine_b", 0);
+void make_big_curve(){
+
 }
 
-void start_navigation(){
-    // send_message_arduino(SWITCH);
-    // int switch_button = receive_message_arduino();
-    int switch_button = 0;
-    // TODO: make function to read char and transform to int
-
-    // clock_t start_time = clock(), diff;
-
-    // diff = clock() - start_time;
-
-    // int msec = diff * 1000 / CLOCKS_PER_SEC;
-    // printf("Time taken %d seconds %d milliseconds\n", msec/1000, msec%1000);
-
-    if(switch_button){
-        turn_engine("engine_a", 1);
-        turn_engine("engine_b", 1);
-    }
-    else{
-        printf("Equipament is turned off!\n");
+void checks_ended_circuit(int lines_completed, int total_number_lines){
+    if(lines_completed < total_number_lines){
+        // Circuit completed
+        // Stop veicule
+        printf("Circuit Ended!\n");
         exit(0);
     }
 }
 
-void start_drill(){
+void start_navigation(int total_number_lines, int measurement_distance){
+    int lines_completed = 0;
 
+    while(lines_completed < total_number_lines){
+        complete_line(&lines_completed, measurement_distance);
+
+        checks_ended_circuit(lines_completed, total_number_lines);
+
+        make_first_curve();
+        make_second_curve();
+
+        complete_line(&lines_completed, measurement_distance);
+
+        checks_ended_circuit(lines_completed, total_number_lines);
+
+        make_big_curve();
+    }
 }
 
 double total_moved_in_line(){
     return 100.0;
 }
 
-void forward_navigation(){
-    // while(!complete_line_drill){
-    //     while(total_moved < drill_distance){
-    //         total_moved = total_moved_in_line();
-    //     }
-    //     start_drill();
-    // }
-}
-
 int main (int argc, char* argv[]){
-    int number_lines = 0;
+    int total_number_lines = 0;
     int measurement_distance = 0;
     FILE *settings_file = fopen("settings.conf", "r");
 
-    fscanf(settings_file, "%d %d", &number_lines, &measurement_distance);
-    // TODO: configure Arduino with settings.
+    fscanf(settings_file, "%d %d", &total_number_lines, &measurement_distance);
 
     // char* device = (argc < 2) ? MODEMDEVICE : argv[1];
 
     //uart_init(device);
 
-    start_navigation();
+    start_navigation(total_number_lines, measurement_distance);
 
     fclose(settings_file);
 
