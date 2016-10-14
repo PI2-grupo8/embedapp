@@ -34,7 +34,7 @@
 #include <Wire.h>
 #include <DHT.h>
 
-#undef DEBUG // print meaningful messages to the Serial if defined
+#define DEBUG // print meaningful messages to the Serial if defined
 
 #ifdef DEBUG
 # define ZERO  '0'

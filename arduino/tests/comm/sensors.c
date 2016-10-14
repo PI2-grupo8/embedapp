@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "rasp_uart.h"
 #include "sensors.h"
@@ -8,7 +9,7 @@ void read_higro()
 {
 	union {
 		float f_var;
-		int i_var;
+		uint32_t i_var;
 	} read_var;
 	struct uart_data rx_buffer = {malloc(2), 2};
 	struct uart_data tx_buffer = {malloc(1), 1};
@@ -25,11 +26,11 @@ void read_air()
 {
 	union {
 		float f_var;
-		int i_var;
+		uint32_t i_var;
 	} read_var;
 	struct uart_data tx_buffer = {malloc(1), 1};
 	struct uart_data rx_buffer = {malloc(4), 4};
-	int accum = 0;
+	uint32_t accum = 0;
 	int i;
 
 	tx_buffer.data[0] = 1;
@@ -37,7 +38,7 @@ void read_air()
 	uart_recv(&rx_buffer);
 
 	for (i = 0; i <= 3; i++)
-		accum += ((unsigned)rx_buffer.data[i] << i * 8);
+		accum += (rx_buffer.data[i] << (i * 8));
 	read_var.i_var = accum;
 
 	printf("Air humidity read: %f\n", read_var.f_var);
@@ -47,11 +48,11 @@ void read_temp()
 {
 	union {
 		float f_var;
-		int i_var;
+		uint32_t i_var;
 	} read_var;
 	struct uart_data tx_buffer = {malloc(1), 1};
 	struct uart_data rx_buffer = {malloc(4), 4};
-	int accum = 0;
+	uint32_t accum = 0;
 	int i;
 
 	tx_buffer.data[0] = 2;
@@ -59,7 +60,7 @@ void read_temp()
 	uart_recv(&rx_buffer);
 
 	for (i = 0; i <= 3; i++)
-		accum += (rx_buffer.data[i] << i * 8);
+		accum += (rx_buffer.data[i] << (i * 8));
 	read_var.i_var = accum;
 
 	printf("Temperature read: %f\n", read_var.f_var);

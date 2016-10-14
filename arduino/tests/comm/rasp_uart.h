@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -21,7 +22,7 @@
 #endif
 
 struct uart_data {
-	char* data;
+	uint8_t* data;
 	size_t length;
 };
 
