@@ -34,16 +34,24 @@ FUNC forward_navigation
         turn_engine(engine_a, 1)
         turn_engine(engine_b, 2)
       }
-      else if
+      else if(sonar_b == NEAR_WALL){
+        // logic
+      }
+      else{
+        // logic
+      }
 
-  	  turn_engine()
-
-    total_moved = check_total_moved()
+    total_moved = total_moved_in_line()
     }
     start_drill()
   }
 
-FUNC check_total_moved(){
+FUNC stop_vehicle(){
+  turn_engine(engine_a, 0)
+  turn_engine(engine_b, 0)
+}
+
+FUNC total_moved_in_line(){
   send_message_arduino(which_infra)
   infra_stats = receive_message_arduino()
   return infra_stats
@@ -59,5 +67,3 @@ FUNC start_drill
 FUNC stop_drill
 
 FUNC count_row
-
-FUNC stop_vehicle
