@@ -8,12 +8,24 @@ union {
 	uint32_t i_val;
 } read_val;
 
-extern void read_higro();
-extern void read_air();
-extern void read_temp();
-extern void read_sonar(int);
-extern void read_accel();
-extern void read_gyro();
-extern void read_gps();
+struct gps_data {
+	float lat, lon;
+};
+
+struct gyro_data {
+	int16_t gx, gy, gz;
+};
+
+struct accel_data {
+	int16_t ax, ay, az;
+};
+
+extern uint32_t read_higro();
+extern float read_air();
+extern float read_temp();
+extern float read_sonar(int);
+extern struct accel_data read_accel();
+extern struct gyro_data read_gyro();
+extern struct gps_data read_gps();
 
 #endif
