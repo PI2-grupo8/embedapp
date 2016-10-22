@@ -1,22 +1,43 @@
-require 'socket'
-include Socket::Constants
+#!/usr/bin/env ruby -w
+require "socket"
+class Server
+  def initialize( port, ip )
+    @server = TCPServer.open( ip, port )
+    @navigation_path = "./a.out"
+    run
+  end
 
-READ_CONF = 'READ_CONF' 
-WRITE_CONF = 'WRITE_CONF' 
-GET_MEANSUREMENT = 'GET_MEANSUREMENT' 
-SYNC = 'SYNC'
+  def run
+    loop {
+      client = @server.accept
+      client.puts "Connection established!"
+      listen_user_messages(client)
+    }
+  end
 
-socket = Socket.new(AF_INET, SOCK_STREAM, 0)
-sockaddr = Socket.sockaddr_in(5000, 'localhost')
-socket.bind(sockaddr)
-socket.listen(5)
+  def listen_user_messages(client)
+    loop {
+      begin
+        msg = client.gets.chomp
+        puts "MESAGE: #{msg}\n"
 
-begin # emulate blocking accept
-  client_socket, client_addrinfo = socket.accept_nonblock
-rescue IO::WaitReadable, Errno::EINTR
-  IO.select([socket])
-  retry
+        case msg
+
+        when "close"
+          client.puts "closing"
+          client.close
+          break
+        when "start"
+          puts "start navigation"
+          exec(@navigation)
+          break
+        else
+        end
+      rescue 
+        break
+      end
+    }
+  end
 end
-puts "The client said, '#{client_socket.readline.chomp}'"
-client_socket.puts "Hello from script one!"
-socket.close
+
+Server.new( 3000, "localhost" )
