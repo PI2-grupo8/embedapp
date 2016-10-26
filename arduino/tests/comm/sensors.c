@@ -137,8 +137,8 @@ struct gyro_data read_gyro()
 	for (i = 0; i < 3; i++)
 		gyro[i] = rx_buffer.data[2*i] | (rx_buffer.data[2*i+1] << 8);
 	gd.gx = gyro[0];
-	gd.gx = gyro[1];
-	gd.gx = gyro[2];
+	gd.gy = gyro[1];
+	gd.gz = gyro[2];
 
 	return gd;
 }

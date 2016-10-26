@@ -14,17 +14,21 @@ int main(int argc, char **argv)
 	char device[512];
 	char *last_arg = argv[argc-1];
 
+	struct accel_data ad;
+	struct gyro_data gd;
+	struct gps_data gpsd;
+
 	if (last_arg[0] != '-' && argc > 1)
 		strncpy(device, last_arg, 512);
 	else
 		scanf("%[^\n]%*c", device);
 
-	printf("Trying to initiate device at %s.\n", device);
+	//printf("Trying to initiate device at %s.\n", device);
 	if ((status = uart_init(device)) != 0) {
 		fprintf(stderr, "Error opening device: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
-	printf("Device initiated succesfully.\n");
+	//printf("Device initiated succesfully.\n");
 
 	while ((opt = getopt(argc, argv, "h01234567")) != -1) {
 		switch (opt) {
@@ -38,16 +42,18 @@ int main(int argc, char **argv)
 			read_temp();
 			break;
 		case '3': // read_sonar(0)
-			read_sonar(0);
+			printf("\nSonar: %.2f cm\n", read_sonar(0));
 			break;
 		case '4': // read_sonar(1)
 			read_sonar(1);
 			break;
 		case '5': // read_accel()
-			read_accel();
+			ad = read_accel();
+			printf("%d, %d, %d\n", ad.ax, ad.ay, ad.az);
 			break;
 		case '6': // read_gyro()
-			read_gyro();
+			gd = read_gyro();
+			printf("%d, %d, %d\n", gd.gx, gd.gy, gd.gz);
 			break;
 		case '7': // read_gps()
 			read_gps();
