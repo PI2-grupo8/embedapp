@@ -42,10 +42,10 @@ int main(int argc, char **argv)
 			read_temp();
 			break;
 		case '3': // read_sonar(0)
-			printf("\nSonar: %.2f cm\n", read_sonar(0));
+			printf("Front Sonar: %.2f cm\n", read_sonar(0));
 			break;
 		case '4': // read_sonar(1)
-			read_sonar(1);
+			printf("Rear Sonar: %.2f cm\n", read_sonar(1));
 			break;
 		case '5': // read_accel()
 			ad = read_accel();
@@ -56,7 +56,8 @@ int main(int argc, char **argv)
 			printf("%d, %d, %d\n", gd.gx, gd.gy, gd.gz);
 			break;
 		case '7': // read_gps()
-			read_gps();
+			gpsd = read_gps();
+			printf("%.5f, %.5f\n", gpsd.lat, gpsd.lon);
 			break;
 		case 'h': // help
 			print_help(argv[0]);

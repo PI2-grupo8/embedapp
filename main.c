@@ -1,10 +1,10 @@
-#include "arduino/tests/comm/rasp_uart.h"
-#include "arduino/tests/comm/sensors.c"
-#include <stdbool.h>
-#include "unistd.h"
+	#include "arduino/tests/comm/rasp_uart.h"
+	#include "arduino/tests/comm/sensors.c"
+	#include <stdbool.h>
+	#include "unistd.h"
 
-#define CLOSE_DISTANCE 10
-#define MEDIUM_DISTANCE 15
+	#define CLOSE_DISTANCE 10
+	#define MEDIUM_DISTANCE 15
 #define FAR_DISTANCE 20
 
 void start_drill(){
@@ -78,39 +78,57 @@ void wall_follower(){
     float top_sonar_value = 0;
     float bottom_sonar_value = 0;
 
+	FILE *dists = fopen("dists.dat", "w");
+	FILE *states = fopen("states.dat", "w");
+
     int i = 0;
     for(i=0;i < 2000;i++){
+		usleep(10000); // 10 ms (sample period)
         top_sonar_value = read_sonar(0);
         bottom_sonar_value = read_sonar(1);
 
+		fprintf(dists, "%.2f %.2f\n", top_sonar_value, bottom_sonar_value);
+
         if((top_sonar_value > CLOSE_DISTANCE && top_sonar_value < FAR_DISTANCE) && (bottom_sonar_value > CLOSE_DISTANCE && bottom_sonar_value < FAR_DISTANCE)){
-            print("%d -- S1: Medio - S2: Medio\n", i);
+            printf("%d -- S1: Medio - S2: Medio\n", i);
+			fprintf(states, "1\n");
         }
         else if((top_sonar_value > FAR_DISTANCE) && (bottom_sonar_value > CLOSE_DISTANCE && bottom_sonar_value < FAR_DISTANCE)){
-            print("%d -- S1: Longe - S2: Medio\n", i);
+            printf("%d -- S1: Longe - S2: Medio\n", i);
+			fprintf(states, "2\n");
         }
         else if((top_sonar_value < CLOSE_DISTANCE) && (bottom_sonar_value > CLOSE_DISTANCE && bottom_sonar_value < FAR_DISTANCE)){
-            print("%d -- S1: Perto - S2: Medio\n", i);
+            printf("%d -- S1: Perto - S2: Medio\n", i);
+			fprintf(states, "3\n");
         }
         else if((top_sonar_value < CLOSE_DISTANCE) && (bottom_sonar_value < CLOSE_DISTANCE)){
-            print("%d -- S1: Perto - S2: Perto\n", i);
+            printf("%d -- S1: Perto - S2: Perto\n", i);
+			fprintf(states, "4\n");
         }
         else if((top_sonar_value > CLOSE_DISTANCE && top_sonar_value < FAR_DISTANCE) && (bottom_sonar_value < CLOSE_DISTANCE)){
-            print("%d -- S1: Medio - S2: Perto\n", i);
+            printf("%d -- S1: Medio - S2: Perto\n", i);
+			fprintf(states, "5\n");
         }
         else if((top_sonar_value > FAR_DISTANCE) && (bottom_sonar_value < CLOSE_DISTANCE)){
-            print("%d -- S1: Longe - S2: Perto\n", i);
+            printf("%d -- S1: Longe - S2: Perto\n", i);
+			fprintf(states, "6\n");
         }
         else if((top_sonar_value > FAR_DISTANCE) && (bottom_sonar_value > FAR_DISTANCE)){
-            print("%d -- S1: Longe - S2: Longe\n", i);
+            printf("%d -- S1: Longe - S2: Longe\n", i);
+			fprintf(states, "7\n");
         }
         else if((top_sonar_value > CLOSE_DISTANCE && top_sonar_value < FAR_DISTANCE) && (bottom_sonar_value > FAR_DISTANCE)){
-            print("%d -- S1: Medio - S2: Longe\n", i);
+            printf("%d -- S1: Medio - S2: Longe\n", i);
+			fprintf(states, "8\n");
         }
         else{
-            print("%d -- S1: Perto - S2: Longe\n", i);
+            printf("%d -- S1: Perto - S2: Longe\n", i);
+			fprintf(states, "9\n");
         }
     }
+
+	fclose(dists);
+	fclose(states);
 }
 
 int main (int argc, char* argv[]){
@@ -125,6 +143,7 @@ int main (int argc, char* argv[]){
     uart_init(device);
 
     // start_navigation(total_number_lines, measurement_distance);
+	wall_follower();
 
     fclose(settings_file);
 

@@ -37,14 +37,14 @@
 #undef DEBUG // print meaningful messages to the Serial if defined
 
 #ifdef DEBUG
-# define ZERO  '0'
-# define ONE   '1'
-# define TWO   '2'
-# define THREE '3'
-# define FOUR  '4'
-# define FIVE  '5'
-# define SIX   '6'
-# define SEVEN '7'
+# define ZERO  '0' // higromter
+# define ONE   '1' // air relative humidity
+# define TWO   '2' // temperature
+# define THREE '3' // front sonar
+# define FOUR  '4' // rear sonar
+# define FIVE  '5' // accelerometer
+# define SIX   '6' // gyroscope
+# define SEVEN '7' // GPS
 #else
 # define ZERO   0
 # define ONE    1

@@ -166,6 +166,7 @@ struct gps_data read_gps()
 	read_var.i_var = accum;
 	lat = read_var.f_var;
 
+	accum = 0;
 	for (i = 0; i <= 3; i++)
 		accum += (rx_buffer.data[i+4] << (i * 8));
 	read_var.i_var = accum;
