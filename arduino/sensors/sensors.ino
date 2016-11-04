@@ -7,7 +7,7 @@
  *   higrometer (3V3 or 5V):
  *   - Analog pin: A0
  *
- *   DHT22 (3V3 or 5V):
+ *   AM2302 (3V3 or 5V):
  *   - SIG pin: 7
  *
  *   sonar front (5V):
@@ -162,7 +162,7 @@ void read_higro() { // 0 - leitura da umidade do solo
   int read_val = analogRead(higro_pin);
 
 # ifdef DEBUG
-    Serial.print("higro read_val: ");
+    Serial.print("Leitura do higrometro: ");
     Serial.println(read_val);
 # else
     byte low_byte = read_val & 0xFF;
@@ -178,7 +178,7 @@ void read_air() { // 1 - air umidity reading
   while (isnan(h))
     h = dht.readHumidity();
 # ifdef DEBUG
-  Serial.print("Air umidity: ");
+  Serial.print("Umidade relativa do ar: ");
   Serial.print(h, 2);
   Serial.println(" %");
 # else
@@ -197,7 +197,7 @@ void read_temp() { // 2 - temperature reading
   while (isnan(t))
     t = dht.readTemperature();
 # ifdef DEBUG
-  Serial.print("Temp: "); Serial.println(t);
+  Serial.print("Temperatura: "); Serial.print(t); Serial.println(" C");
 # else
   union {
     float f_tmp;
@@ -220,8 +220,8 @@ void read_sonar (int sonar_id) { // 3 e 4 - front and rear sonar reading
   
 # ifdef DEBUG
     char msg[128];
-    char sonar_name[][6] = {"front", "rear"};
-    sprintf(msg, "Sonar %s reading: ", sonar_name[sonar_id]);
+    char sonar_name[][10] = {"frontal", "traseiro"};
+    sprintf(msg, "Sonar %s: ", sonar_name[sonar_id]);
     Serial.print(msg);
     Serial.print(dist_cm.f_dist_cm);
     Serial.println(" cm");

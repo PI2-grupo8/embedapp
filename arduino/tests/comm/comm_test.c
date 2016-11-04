@@ -33,31 +33,31 @@ int main(int argc, char **argv)
 	while ((opt = getopt(argc, argv, "h01234567")) != -1) {
 		switch (opt) {
 		case '0': // read_higro()
-			read_higro();
+			printf("Leitura do higrometro: %i\n", read_higro());
 			break;
 		case '1': // read_air()
-			read_air();
+			printf("Umidade relativa do ar: %.2f %%\n", read_air());
 			break;
 		case '2': // read_temp()
-			read_temp();
+			printf("Temperatura: %.2f C\n", read_temp());
 			break;
 		case '3': // read_sonar(0)
-			printf("Front Sonar: %.2f cm\n", read_sonar(0));
+			printf("Ultrassom frontal: %.2f cm\n", read_sonar(0));
 			break;
 		case '4': // read_sonar(1)
-			printf("Rear Sonar: %.2f cm\n", read_sonar(1));
+			printf("Ultrassom traseiro: %.2f cm\n", read_sonar(1));
 			break;
 		case '5': // read_accel()
 			ad = read_accel();
-			printf("%d, %d, %d\n", ad.ax, ad.ay, ad.az);
+			printf("Leitura do acelerometro (x, y, z): %d, %d, %d\n", ad.ax, ad.ay, ad.az);
 			break;
 		case '6': // read_gyro()
 			gd = read_gyro();
-			printf("%d, %d, %d\n", gd.gx, gd.gy, gd.gz);
+			printf("Leitura do giroscopio (x, y, z): %d, %d, %d\n", gd.gx, gd.gy, gd.gz);
 			break;
 		case '7': // read_gps()
 			gpsd = read_gps();
-			printf("%.5f, %.5f\n", gpsd.lat, gpsd.lon);
+			printf("Leitura do GPS (lat, lon): %.5f, %.5f\n", gpsd.lat, gpsd.lon);
 			break;
 		case 'h': // help
 			print_help(argv[0]);
