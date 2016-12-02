@@ -2,8 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/time.h>
+
 #include "rasp_uart.h"
 #include "sensors.h"
+#include "actuators.h"
 
 void print_help (char*);
 
@@ -18,6 +21,11 @@ int main(int argc, char **argv)
 	struct gyro_data gd;
 	struct gps_data gpsd;
 
+	struct timeval start, stop;
+
+	FILE *fp_accel = fopen("accel.dat", "w");
+	int i;
+
 	if (last_arg[0] != '-' && argc > 1)
 		strncpy(device, last_arg, 512);
 	else
@@ -30,7 +38,7 @@ int main(int argc, char **argv)
 	}
 	//printf("Device initiated succesfully.\n");
 
-	while ((opt = getopt(argc, argv, "h01234567")) != -1) {
+	while ((opt = getopt(argc, argv, "abcdefgh01234567")) != -1) {
 		switch (opt) {
 		case '0': // read_higro()
 			printf("Leitura do higrometro: %i\n", read_higro());
@@ -48,7 +56,6 @@ int main(int argc, char **argv)
 			printf("Ultrassom traseiro: %.2f cm\n", read_sonar(1));
 			break;
 		case '5': // read_accel()
-			ad = read_accel();
 			printf("Leitura do acelerometro (x, y, z): %d, %d, %d\n", ad.ax, ad.ay, ad.az);
 			break;
 		case '6': // read_gyro()
@@ -62,14 +69,37 @@ int main(int argc, char **argv)
 		case 'h': // help
 			print_help(argv[0]);
 			break;
+		case 'a': // L+
+			direction('a');
+			break;
+		case 'b': // L
+			direction('b');
+			break;
+		case 'c': // L-
+			direction('c');
+			break;
+		case 'd': // DN
+			direction('d');
+			break;
+		case 'e': // R-
+			direction('e');
+			break;
+		case 'f': // R
+			direction('f');
+			break;
+		case 'g': // R+
+			direction('g');
+			break;
 		default:
-			fprintf(stderr, "Usage: %s [-[01234567]] [-h] <device>\n", argv[0]);
+			fprintf(stderr, "Usage: %s [-[01234567abcdefg]] [-h] <device>\n", argv[0]);
 			exit(EXIT_FAILURE);
 			break;
 		}
 	}
 
 	uart_end();
+
+	fclose(fp_accel);
 
 	exit(EXIT_SUCCESS);
 }
@@ -85,5 +115,12 @@ void print_help (char *name)
 	printf("  -5: read accelerometer\n");
 	printf("  -6: read gyroscope\n");
 	printf("  -7: read GPS\n");
+	printf("  -a: direction L+\n");
+	printf("  -b: direction L\n");
+	printf("  -c: direction L-\n");
+	printf("  -d: direction DN\n");
+	printf("  -e: direction R-\n");
+	printf("  -f: direction R\n");
+	printf("  -g: direction R+\n");
 	printf("  -h: print this message\n");
 }

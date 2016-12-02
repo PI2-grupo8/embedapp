@@ -1,5 +1,5 @@
 /*
- * Pins used: A0, A4, A5, 2, 3, 4, 5, 7, 8, 9
+ * Pins used: A0, A4, A5, 2, 3, 4, 5, 6, 7, 8, 9
  * BAUD rate: 9600
  * 
  * Devices, pins and power:
@@ -8,53 +8,127 @@
  *   - Analog pin: A0
  *
  *   AM2302 (3V3 or 5V):
- *   - SIG pin: 7
+ *   - SIG pin: 7 - 22
  *
  *   sonar front (5V):
- *   - TRIG: 4
- *   - ECHO: 5
+ *   - TRIG: 4 - 30
+ *   - ECHO: 5 - 31
  *
  *   sonar rear (5V):
- *   - TRIG: 8
- *   - ECHO: 9
+ *   - TRIG: 8 - 40
+ *   - ECHO: 9 - 41
  *
  *   IMU (5V):
- *   - SDA: A4
- *   - SCL: A5
+ *   - SDA: A4 - 20
+ *   - SCL: A5 - 21
  *
  *   GPS (5V):
- *   - TX: 3
- *   - RX: 2
- *
+ *   - TX: 3 - 50
+ *   - RX: 2 - 51
+ *   
+ *   Mabuchi (Forward):
+ *   - PWM: 5
+ *   - IN1: 6
+ *   - IN2: 7
+ *   
+ *   Mabuchi (Drilling):
+ *   - PWM: 8
+ *   - IN1: 9
+ *   - IN2: 10
+ *   
+ *   Stepper (Direction):
+ *   - STEP: 11
+ *   - DIR:  12
+ *   - EN:   13
  */
 
 #include <Ultrasonic.h>
 #include <SoftwareSerial.h>
 #include <Adafruit_GPS.h>
+#include <AccelStepper.h>
 #include <Wire.h>
 #include <DHT.h>
+#include <Servo.h>
 
 #undef DEBUG // print meaningful messages to the Serial if defined
 
 #ifdef DEBUG
-# define ZERO  '0' // higromter
-# define ONE   '1' // air relative humidity
-# define TWO   '2' // temperature
-# define THREE '3' // front sonar
-# define FOUR  '4' // rear sonar
-# define FIVE  '5' // accelerometer
-# define SIX   '6' // gyroscope
-# define SEVEN '7' // GPS
+
+# define HIGRO         '0' // higromter
+# define AIR           '1' // air relative humidity
+# define TEMP          '2' // temperature
+# define FRONT_SONAR   '3' // front sonar
+# define REAR_SONAR    '4' // rear sonar
+# define ACCEL         '5' // accelerometer
+# define GYRO          '6' // gyroscope
+# define GPS_M4        '7' // GPS
+
+# define LEFT_1        'a'
+# define LEFT_2        'b'
+# define LEFT_3        'c'
+# define DN            'd'
+# define RIGHT_1       'e'
+# define RIGHT_2       'f'
+# define RIGHT_3       'g'
+
+# define FORWARD       'h'
+# define BACKWARD      'i'
+# define STOP          'j'
+
+# define PUSH_DRILL    'k'
+# define STOP_DRILL    'l'
+# define PULL_DRILL    'm'
+
 #else
-# define ZERO   0
-# define ONE    1
-# define TWO    2
-# define THREE  3
-# define FOUR   4
-# define FIVE   5
-# define SIX    6
-# define SEVEN  7
+
+# define HIGRO          0
+# define AIR            1
+# define TEMP           2
+# define FRONT_SONAR    3
+# define REAR_SONAR     4
+# define ACCEL          5
+# define GYRO           6
+# define GPS_M4         7
+
+# define LEFT_1        'a'
+# define LEFT_2        'b'
+# define LEFT_3        'c'
+# define DN            'd'
+# define RIGHT_1       'e'
+# define RIGHT_2       'f'
+# define RIGHT_3       'g'
+
+# define FORWARD       'h'
+# define BACKWARD      'i'
+# define STOP          'j'
+
+# define PUSH_DRILL    'k'
+# define STOP_DRILL    'l'
+# define PULL_DRILL    'm'
+
 #endif
+
+/****************** Stepper ***************************************/
+const int step_pin = 11;
+const int dir_pin = 12;
+const int en_pin = 13;
+
+const int stepper_speed = 100;
+const int stepper_accel = 100;
+
+int cur_pos;
+int end_pos;
+int rel_pos;
+char cur_state;
+
+AccelStepper stepper(1, step_pin, dir_pin);
+
+/****************** Mabuchi ***************************************/
+// [0] -> forward
+// [1] -> drilling
+const int pwm_pin[] = {5, 8};
+const int in1_pin[] = {6, 9};
+const int in2_pin[] = {7, 10};
 
 /****************** higrometer section ****************************/
 // higrometer power supply: 5 or 3.3 VDC
@@ -64,8 +138,8 @@ const int higro_pin = A0;
 /****************** sonar section *********************************/
 // sonar power: 5 VDC
 // sonar pins; [0] is from the front sonar, [1] is for the back sonar
-const int trigger_pins[] = {4, 8};
-const int echo_pins[] = {5, 9};
+const int trigger_pins[] = {30, 40};
+const int echo_pins[]    = {31, 41};
 
 Ultrasonic ultra[] = {
   Ultrasonic(trigger_pins[0], echo_pins[0]),
@@ -75,8 +149,8 @@ Ultrasonic ultra[] = {
 /***************** GPS section ***********************************/
 // GPS power supply: 5 VDC
 // GPS pins
-const int gps_tx_pin = 3;
-const int gps_rx_pin = 2;
+const int gps_tx_pin = 50;
+const int gps_rx_pin = 51;
 
 SoftwareSerial gpsSerial(gps_tx_pin, gps_rx_pin);
 Adafruit_GPS GPS(&gpsSerial);
@@ -84,21 +158,41 @@ Adafruit_GPS GPS(&gpsSerial);
 /***************** IMU section ***********************************/
 // IMU power: 5 VDC
 // IMU pins
-const int sda_pin = A4;
-const int scl_pin = A5;
+const int sda_pin = 20;
+const int scl_pin = 21;
 const int MPU = 0x68;
 int AcX, AcY, AcZ, Tmp, GyX, GyY, GyZ;
 float temp_celsius;
 
-/**************** DHT22 section *********************************/
+/**************** AM2302 (DHT22) section *********************************/
 // DHT22 power: 3V3 or 3V
 // DHT type and pins
 const int dht_type = DHT22;
-const int dht_pin = 7;
+const int dht_pin = 22;
 
 DHT dht(dht_pin, dht_type);
 
 void setup() {
+  // stepper setup
+  pinMode(en_pin, OUTPUT);
+  digitalWrite(en_pin, LOW);
+  stepper.setMaxSpeed(stepper_speed);
+  stepper.setAcceleration(stepper_accel);
+  cur_pos = 0;
+  rel_pos = 0;
+  end_pos = 0;
+  cur_state = 0;
+
+  // forward setup
+  pinMode(pwm_pin[0], OUTPUT);
+  pinMode(in1_pin[0], OUTPUT);
+  pinMode(in2_pin[0], OUTPUT);
+
+  // drilling setup
+  pinMode(pwm_pin[1], OUTPUT);
+  pinMode(in1_pin[1], OUTPUT);
+  pinMode(in2_pin[1], OUTPUT);
+
   // higrometer setup
   pinMode(higro_pin, INPUT);
 
@@ -119,6 +213,7 @@ void setup() {
   // DHT22 setup
   dht.begin();
   
+  // Initialize serial port
   Serial.begin(9600);
 }
 
@@ -128,34 +223,74 @@ void loop() {
     byte_read = Serial.read();
     switch(byte_read)
     {
-      case ZERO: // soil moisture reading
+      case HIGRO: // soil moisture reading
         read_higro();
         break;
-      case ONE: // air umidity reading
+      case AIR: // air umidity reading
         read_air();
         break;
-      case TWO: // temperature reading
+      case TEMP: // temperature reading
         read_temp();
         break;
-      case THREE: // front sonar reading
+      case FRONT_SONAR: // front sonar reading
         read_sonar(0);
         break;
-      case FOUR: // rear sonar reading
+      case REAR_SONAR: // rear sonar reading
         read_sonar(1);
         break;
-      case FIVE: // accelerometer reading
+      case ACCEL: // accelerometer reading
         read_accel();
         break;
-      case SIX: // gyroscope reading
+      case GYRO: // gyroscope reading
         read_gyro();
         break;
-      case SEVEN: // GPS reading
+      case GPS_M4: // GPS reading
         read_gps();
+        break;
+      case LEFT_1: // L+
+        turn_engine(-3);
+        break;
+      case LEFT_2: //  L
+        turn_engine(-2);
+        break;
+      case LEFT_3: // L-
+        turn_engine(-1);
+        break;
+      case DN: //DN
+        turn_engine(0);
+        break;
+      case RIGHT_1: // R-
+        turn_engine(1);
+        break;
+      case RIGHT_2: // R
+        turn_engine(2);
+        break;
+      case RIGHT_3 : //R+
+        turn_engine(3);
+        break;
+      case FORWARD:
+        move_mabuchi(0, 255, 0);
+        break;
+      case BACKWARD:
+        move_mabuchi(0, 255, 1);
+        break;
+      case STOP:
+        move_mabuchi(0, 0, 0);
+        break;
+      case PUSH_DRILL:
+        break;
+      case PULL_DRILL:
+        break;
+      case STOP_DRILL:
         break;
       default:
         break;
     }
   }
+
+  if (abs(stepper.distanceToGo()) > 0)
+    cur_pos = end_pos - stepper.distanceToGo();
+  stepper.run();
 }
 
 void read_higro() { // 0 - leitura da umidade do solo
@@ -362,4 +497,64 @@ void clearGPS() { // Clear old and corrupt data from Serial Port
   }
   GPS.parse(GPS.lastNMEA()); // Parse that last good NMEA sentence
 }
+
+void turn_engine(int dir){
+  if (cur_state == dir)
+    return;
+  cur_state = dir;
+  switch(dir)
+  {
+    case -3:
+      end_pos = 150;
+      break;
+    case -2:
+      end_pos = 100;
+      break;
+    case -1:
+      end_pos = 60;
+      break;
+    case 0:
+      end_pos = 0;
+      break;
+    case 1:
+      end_pos = -60;
+      break;
+    case 2:
+      end_pos = -100;
+      break;
+    case 3:
+      end_pos = -150;
+      break;
+    default:
+      end_pos = cur_pos;
+  }
+
+  rel_pos = end_pos - cur_pos;
+  stepper.move(rel_pos);
+}
+
+void move_mabuchi(int mot, int mab_speed, int dir)
+{
+  boolean inPin1 = LOW;
+  boolean inPin2 = HIGH;
+
+  switch(dir)
+  {
+    case 0:
+      inPin1 = HIGH;
+      inPin2 = LOW;
+      break;
+    case 1:
+      inPin1 = LOW;
+      inPin2 = HIGH;
+      break;
+    default:
+      return;
+  }
+  
+  digitalWrite(in1_pin[mot], inPin1);
+  digitalWrite(in2_pin[mot], inPin2);
+  analogWrite(pwm_pin[mot], mab_speed);
+}
+
 

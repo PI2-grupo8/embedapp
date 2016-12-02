@@ -1,4 +1,4 @@
-OBJ = comm_test.o rasp_uart.o sensors.o
+OBJ = comm_test.o rasp_uart.o sensors.o actuators.o
 CFLAGS = 
 LDFLAGS = 
 CC = gcc
