@@ -1,6 +1,6 @@
 // Vcc = 3.3V or 5V
 
-const int higro_pin = 0;
+const int higro_pin = A0;
 
 void setup() {
   Serial.begin(9600);

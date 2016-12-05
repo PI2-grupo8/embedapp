@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 	}
 	//printf("Device initiated succesfully.\n");
 
-	while ((opt = getopt(argc, argv, "abcdefgh01234567")) != -1) {
+	while ((opt = getopt(argc, argv, "abcdefghij01234567")) != -1) {
 		switch (opt) {
 		case '0': // read_higro()
 			printf("Leitura do higrometro: %i\n", read_higro());
@@ -66,29 +66,38 @@ int main(int argc, char **argv)
 			gpsd = read_gps();
 			printf("Leitura do GPS (lat, lon): %.5f, %.5f\n", gpsd.lat, gpsd.lon);
 			break;
-		case 'h': // help
-			print_help(argv[0]);
-			break;
+		//case 'h': // help
+		//	print_help(argv[0]);
+		//	break;
 		case 'a': // L+
-			direction('a');
+			direction(-3);
 			break;
 		case 'b': // L
-			direction('b');
+			direction(-2);
 			break;
 		case 'c': // L-
-			direction('c');
+			direction(-1);
 			break;
 		case 'd': // DN
-			direction('d');
+			direction(0);
 			break;
 		case 'e': // R-
-			direction('e');
+			direction(1);
 			break;
 		case 'f': // R
-			direction('f');
+			direction(2);
 			break;
 		case 'g': // R+
-			direction('g');
+			direction(3);
+			break;
+		case 'h': // Forward
+			engine(1);
+			break;
+		case 'i': // Backward
+			engine(-1);
+			break;
+		case 'j': // Stop
+			engine(0);
 			break;
 		default:
 			fprintf(stderr, "Usage: %s [-[01234567abcdefg]] [-h] <device>\n", argv[0]);

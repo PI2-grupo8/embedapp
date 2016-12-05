@@ -27,5 +27,6 @@ extern float read_sonar(int);
 extern struct accel_data read_accel();
 extern struct gyro_data read_gyro();
 extern struct gps_data read_gps();
+extern float get_time();
 
 #endif

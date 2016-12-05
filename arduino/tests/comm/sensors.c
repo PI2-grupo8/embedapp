@@ -177,3 +177,26 @@ struct gps_data read_gps()
 
 	return gd;
 }
+
+float get_time()
+{
+	union {
+		float f_var;
+		uint32_t i_var;
+	} read_var;
+	struct uart_data tx_buffer = {malloc(1), 1};
+	struct uart_data rx_buffer = {malloc(4), 4};
+	int i;
+
+	uint32_t accum = 0;
+
+	tx_buffer.data[0] = 8;
+
+	uart_send(&tx_buffer);
+	uart_recv(&rx_buffer);
+
+	for (i = 0; i < 4; i++)
+		accum += (rx_buffer.data[i] << (i * 8));
+
+	return (float) accum / 1e3;
+} 

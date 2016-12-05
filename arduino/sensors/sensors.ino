@@ -1,5 +1,5 @@
 /*
- * Pins used: A0, A4, A5, 2, 3, 4, 5, 6, 7, 8, 9
+ * Pins used: A0, A4, A5, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 30, 31, 40, 41, 50, 51
  * BAUD rate: 9600
  * 
  * Devices, pins and power:
@@ -62,6 +62,7 @@
 # define ACCEL         '5' // accelerometer
 # define GYRO          '6' // gyroscope
 # define GPS_M4        '7' // GPS
+# define GET_TIME      '8'
 
 # define LEFT_1        'a'
 # define LEFT_2        'b'
@@ -70,6 +71,9 @@
 # define RIGHT_1       'e'
 # define RIGHT_2       'f'
 # define RIGHT_3       'g'
+
+# define LEFT_4        'n'
+# define RIGHT_4       'o'
 
 # define FORWARD       'h'
 # define BACKWARD      'i'
@@ -89,6 +93,7 @@
 # define ACCEL          5
 # define GYRO           6
 # define GPS_M4         7
+# define GET_TIME       8
 
 # define LEFT_1        'a'
 # define LEFT_2        'b'
@@ -97,6 +102,9 @@
 # define RIGHT_1       'e'
 # define RIGHT_2       'f'
 # define RIGHT_3       'g'
+
+# define LEFT_4        'n'
+# define RIGHT_4       'o'
 
 # define FORWARD       'h'
 # define BACKWARD      'i'
@@ -115,6 +123,11 @@ const int en_pin = 13;
 
 const int stepper_speed = 100;
 const int stepper_accel = 100;
+
+const int min_step = 30;
+const int mid_step = 60;
+const int max_step = 100;
+const int big_step = 150;
 
 int cur_pos;
 int end_pos;
@@ -215,6 +228,7 @@ void setup() {
   
   // Initialize serial port
   Serial.begin(9600);
+  Serial.flush();
 }
 
 void loop() {
@@ -247,6 +261,9 @@ void loop() {
       case GPS_M4: // GPS reading
         read_gps();
         break;
+      case LEFT_4: // L++
+        turn_engine(-4);
+        break;
       case LEFT_1: // L+
         turn_engine(-3);
         break;
@@ -268,6 +285,9 @@ void loop() {
       case RIGHT_3 : //R+
         turn_engine(3);
         break;
+      case RIGHT_4 : //R++
+        turn_engine(4);
+        break;
       case FORWARD:
         move_mabuchi(0, 255, 0);
         break;
@@ -282,6 +302,9 @@ void loop() {
       case PULL_DRILL:
         break;
       case STOP_DRILL:
+        break;
+      case GET_TIME:
+        send_time();
         break;
       default:
         break;
@@ -505,25 +528,31 @@ void turn_engine(int dir){
   switch(dir)
   {
     case -3:
-      end_pos = 150;
+      end_pos = max_step;
       break;
     case -2:
-      end_pos = 100;
+      end_pos = mid_step;
       break;
     case -1:
-      end_pos = 60;
+      end_pos = min_step;
       break;
     case 0:
       end_pos = 0;
       break;
     case 1:
-      end_pos = -60;
+      end_pos = -min_step;
       break;
     case 2:
-      end_pos = -100;
+      end_pos = -mid_step;
       break;
     case 3:
-      end_pos = -150;
+      end_pos = -max_step;
+      break;
+    case 4:
+      end_pos = big_step;
+      break;
+    case -4:
+      end_pos = -big_step;
       break;
     default:
       end_pos = cur_pos;
@@ -557,4 +586,11 @@ void move_mabuchi(int mot, int mab_speed, int dir)
   analogWrite(pwm_pin[mot], mab_speed);
 }
 
+void send_time() {
+  unsigned long tmp = millis();
+  int i;
+  
+  for (i = 0; i < 4; i++)
+    Serial.write((tmp >> (i*8)) & 0xFF);
+}
 
