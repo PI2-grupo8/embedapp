@@ -10,6 +10,9 @@ void direction(char c)
 	struct uart_data tx_buffer = {malloc(1), 1};
 	switch(c)
 	{
+		case -4:
+			tx_buffer.data[0] = 'n';
+			break;
 		case -3:
 			tx_buffer.data[0] = 'c';
 			break;
@@ -30,6 +33,9 @@ void direction(char c)
 			break;
 		case 3:
 			tx_buffer.data[0] = 'g';
+			break;
+		case 4:
+			tx_buffer.data[0] = 'o';
 			break;
 		default:
 			return;

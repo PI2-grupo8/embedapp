@@ -5,9 +5,9 @@
 #include <unistd.h>
 #include <time.h>
 
-#define CLOSE_DISTANCE 5
-#define FAR_DISTANCE 15
-#define NO_WALL_DISTANCE 150
+#define CLOSE_DISTANCE 4
+#define FAR_DISTANCE 10
+#define NO_WALL_DISTANCE 130
 #define SAFE_CURVE_DISTANCE 30
 #define CONST_SPEED 6.2
 
@@ -61,29 +61,33 @@ void make_first_curve(){
     while(top_sonar_value < NO_WALL_DISTANCE){
         check_wall_distance();
         top_sonar_value = read_sonar(0);
+        printf("TOP: %f\n", top_sonar_value);
     }
 
+    printf("\n\n\n\n\n\n\n\n\n\n\nTOP CHEGOU NA CURVA\n");
+    direction(0);    
+    float bottom_sonar_value = 0;
+    bottom_sonar_value = read_sonar(1);
+
+    while(bottom_sonar_value < NO_WALL_DISTANCE){
+        bottom_sonar_value = read_sonar(1);
+        printf("BOTTOM: %f\n", bottom_sonar_value);
+    }
     printf("CHEGOU NA CURVA\n");
 
-    direction(0);
-    double time = 5 * (double)CLOCKS_PER_SEC;
-    clock_t tic = clock();
-    clock_t toc = clock();
-
-    while((double)(toc - tic) < time){
-        toc = clock();
-    }
-
-    direction(3);
-    sleep(30);
+    direction(4);
+    sleep(25);
 
     printf("INICIANDO WALL FOLLOWER DE NOVO\n");
-
+    direction(0);
     int i = 0;
-    for(i=0; i<1000;i++){
-        check_wall_distance();
+    for(i=0; i<1000; i++){
+        top_sonar_value = read_sonar(0);
+        bottom_sonar_value = read_sonar(1);
+        printf("TOP: %f  --  BOTTOM: %f\n", top_sonar_value, bottom_sonar_value);
     }
     engine(0);
+
     // while(total_moved < SAFE_CURVE_DISTANCE){
     //     clock_t start = clock(), diff; // Start timer
 
@@ -178,6 +182,18 @@ int main (int argc, char* argv[]){
     // start_navigation(total_number_lines, measurement_distance, total_measurements_per_line);
 
     make_first_curve();
+
+    // int i =0;
+
+    // for(i=0; i<1000;i++){
+    //     float top_sonar_value = 0;
+    //     float bottom_sonar_value = 0;
+    //     top_sonar_value = read_sonar(0);
+    //     bottom_sonar_value = read_sonar(1);
+
+    //     printf("TOP: %f --- BOTTOM: %f\n", top_sonar_value, bottom_sonar_value);
+    //     // sleep(1);
+    // }
 
     fclose(settings_file);
 
