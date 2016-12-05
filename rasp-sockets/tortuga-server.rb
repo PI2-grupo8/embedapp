@@ -3,6 +3,15 @@
 require "socket"
 
 class Server
+
+  def CMD_START
+    10
+  end
+
+  def CMD_CLOSe
+    11
+  end
+
   def initialize( port, ip )
     @server = TCPServer.open( ip, port )
     @navigation_path = "./a.out"
@@ -28,15 +37,12 @@ class Server
 
         case msg
 
-        when "close"
-          client.puts "closing"
+        when "11"
           client.close
           break
-        when "start"
-          puts "start navigation"
+        when "10"
           client.puts "kill"
-          exec("./a.out")
-          p "OI, eu sou goku"
+          exec("/usr/share/tortuga/tortuga-navigation")
           break
         else
         end
