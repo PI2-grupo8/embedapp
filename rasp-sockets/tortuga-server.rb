@@ -11,8 +11,8 @@ class Server
 
   def run
     loop {
-      client = @server.accept
       begin
+        client = @server.accept
         client.puts "Connection established!"
         listen_user_messages(client)
       rescue
@@ -47,4 +47,4 @@ class Server
   end
 end
 
-Server.new( 4000, "localhost" )
+Server.new( 4000, "0.0.0.0" )
