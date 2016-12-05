@@ -78,6 +78,9 @@ float read_sonar(int sonar_id)
 	uint32_t accum = 0;
 	int i;
 
+	static float sonar[2][50] = {{[0 ... 49] 0}, {[0 ... 49] 0}};
+	static int read_num = 0;
+
 	switch (sonar_id)
 	{
 	case 0:
@@ -96,7 +99,13 @@ float read_sonar(int sonar_id)
 		accum += (rx_buffer.data[i] << (i * 8));
 	read_var.i_var = accum;
 
-	return read_var.f_var;
+	float ret_val = 0;
+	sonar[sonar_id][(read_num++) % 10] = read_var.f_var;
+
+	for (i = 0; i < 50; i++)
+		ret_val += sonar[sonar_id][i];
+
+	return ret_val / 50;
 }
 
 struct accel_data read_accel()
@@ -177,3 +186,27 @@ struct gps_data read_gps()
 
 	return gd;
 }
+
+float get_time()
+{
+	union {
+		float f_var;
+		uint32_t i_var;
+	} read_var;
+	struct uart_data tx_buffer = {malloc(1), 1};
+	struct uart_data rx_buffer = {malloc(4), 4};
+	int i;
+
+	uint32_t accum = 0;
+
+	tx_buffer.data[0] = 8;
+
+	uart_send(&tx_buffer);
+	uart_recv(&rx_buffer);
+
+	for (i = 0; i < 4; i++)
+		accum += (rx_buffer.data[i] << (i * 8));
+
+	return (float) accum / 1e3;
+} 
+
