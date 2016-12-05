@@ -1,4 +1,12 @@
-all: main.c rasp_uart.c
-	gcc main.c -c
-	gcc rasp_uart.c -c
-	gcc *.o -o main
+OBJ = actuators.o sensors.o main.o rasp_uart.o
+
+all: main
+
+main: ${OBJ}
+	gcc $^ -o $@
+
+%.o: %.c
+	gcc -c $< $a
+
+clear:
+	rm *.o main
