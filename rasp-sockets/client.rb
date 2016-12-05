@@ -15,6 +15,8 @@ class Client
     @response = Thread.new do
       loop {
         msg = @server.gets.chomp
+        exit if msg == "kill"
+        
         puts "#{msg}"
       }
     end
@@ -31,5 +33,9 @@ class Client
   end
 end
 
+begin
 server = TCPSocket.open( "localhost", 3000 )
 Client.new( server )
+rescue
+  puts "could not connect"
+end

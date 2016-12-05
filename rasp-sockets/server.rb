@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby -w
+
 require "socket"
+
 class Server
   def initialize( port, ip )
     @server = TCPServer.open( ip, port )
@@ -10,8 +12,11 @@ class Server
   def run
     loop {
       client = @server.accept
-      client.puts "Connection established!"
-      listen_user_messages(client)
+      begin
+        client.puts "Connection established!"
+        listen_user_messages(client)
+      rescue
+      end
     }
   end
 
@@ -29,7 +34,9 @@ class Server
           break
         when "start"
           puts "start navigation"
-          exec(@navigation)
+          client.puts "kill"
+          exec("./a.out")
+          p "OI, eu sou goku"
           break
         else
         end
@@ -40,4 +47,4 @@ class Server
   end
 end
 
-Server.new( 3000, "localhost" )
+Server.new( 4000, "localhost" )
