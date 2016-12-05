@@ -527,6 +527,9 @@ void turn_engine(int dir){
   cur_state = dir;
   switch(dir)
   {
+    case -4:
+      end_pos = big_step;
+      break;
     case -3:
       end_pos = max_step;
       break;
@@ -549,9 +552,6 @@ void turn_engine(int dir){
       end_pos = -max_step;
       break;
     case 4:
-      end_pos = big_step;
-      break;
-    case -4:
       end_pos = -big_step;
       break;
     default:

@@ -78,6 +78,9 @@ float read_sonar(int sonar_id)
 	uint32_t accum = 0;
 	int i;
 
+	static float sonar[2][10] = {{[0 ... 9] 0}, {[0 ... 9] 0}};
+	static int read_num = 0;
+
 	switch (sonar_id)
 	{
 	case 0:
@@ -96,7 +99,13 @@ float read_sonar(int sonar_id)
 		accum += (rx_buffer.data[i] << (i * 8));
 	read_var.i_var = accum;
 
-	return read_var.f_var;
+	float ret_val = 0;
+	sonar[sonar_id][(read_num++) % 10] = read_var.f_var;
+
+	for (i = 0; i < 10; i++)
+		ret_val += sonar[sonar_id][i];
+
+	return ret_val / 10;
 }
 
 struct accel_data read_accel()
@@ -200,3 +209,4 @@ float get_time()
 
 	return (float) accum / 1e3;
 } 
+
