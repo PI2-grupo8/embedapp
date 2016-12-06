@@ -5,9 +5,9 @@
 #include <unistd.h>
 #include <time.h>
 
-#define CLOSE_DISTANCE 4
-#define FAR_DISTANCE 10
-#define NO_WALL_DISTANCE 130
+#define CLOSE_DISTANCE 2
+#define FAR_DISTANCE 5
+#define NO_WALL_DISTANCE 70
 #define SAFE_CURVE_DISTANCE 30
 #define CONST_SPEED 6.2
 
@@ -54,7 +54,6 @@ void check_wall_distance(){
 
 void make_first_curve(){
     engine(1);
-
     float top_sonar_value = 0;
     top_sonar_value = read_sonar(0);
 
@@ -63,52 +62,53 @@ void make_first_curve(){
         top_sonar_value = read_sonar(0);
         printf("TOP: %f\n", top_sonar_value);
     }
+    printf("TOP CHEGOU NA CURVA 1\n");
+    direction(0);
 
-    printf("\n\n\n\n\n\n\n\n\n\n\nTOP CHEGOU NA CURVA\n");
-    direction(0);    
     float bottom_sonar_value = 0;
     bottom_sonar_value = read_sonar(1);
-
     while(bottom_sonar_value < NO_WALL_DISTANCE){
         bottom_sonar_value = read_sonar(1);
         printf("BOTTOM: %f\n", bottom_sonar_value);
     }
-    printf("CHEGOU NA CURVA\n");
+    printf("BOTTOM CHEGOU NA CURVA 1\n");
 
     direction(4);
-    sleep(25);
-
-    printf("INICIANDO WALL FOLLOWER DE NOVO\n");
-    direction(0);
-    int i = 0;
-    for(i=0; i<1000; i++){
-        top_sonar_value = read_sonar(0);
-        bottom_sonar_value = read_sonar(1);
-        printf("TOP: %f  --  BOTTOM: %f\n", top_sonar_value, bottom_sonar_value);
-    }
-    engine(0);
-
-    // while(total_moved < SAFE_CURVE_DISTANCE){
-    //     clock_t start = clock(), diff; // Start timer
-
-    //     speed = get_current_speed()    // Get current speed in m/s
-
-    //     diff = clock() - start;        // Stop timer
-
-    //     int millseconds_taken = (diff * 1000 / CLOCKS_PER_SEC)%1000;
-    //     total_moved += calculate_distance(timer, millseconds_taken);
-    // }
-
-    // top_sonar_value = read_sonar(0);
-
+    sleep(20);
     // while(top_sonar_value > FAR_DISTANCE){
-    //     check_wall_distance();
     //     top_sonar_value = read_sonar(0);
+    //     printf("TOP: %f\n", top_sonar_value);
     // }
-}
 
-void make_second_curve(){
+    direction(0);
+    top_sonar_value = read_sonar(0);
+    while(top_sonar_value < NO_WALL_DISTANCE){
+        top_sonar_value = read_sonar(0);
+        printf("TOP: %f\n", top_sonar_value);
+    }
 
+    printf("TOP ENCONTROU PAREDE\n");
+
+    bottom_sonar_value = read_sonar(1);
+    while(bottom_sonar_value < NO_WALL_DISTANCE){
+        bottom_sonar_value = read_sonar(1);
+        printf("BOTTOM: %f\n", bottom_sonar_value);
+    }
+    printf("BOTTOM CHEGOU NA CURVA 2\n");
+
+    direction(4);
+    while(top_sonar_value > FAR_DISTANCE){
+        top_sonar_value = read_sonar(0);
+        printf("TOP: %f\n", top_sonar_value);
+    }
+    printf("TOP ENCONTROU PAREDE 2\n");
+
+    int i=0;
+    for(i=0; i<500; i++){
+        check_wall_distance();
+    }
+
+    engine(0);
 }
 
 void make_big_curve(){
@@ -138,7 +138,7 @@ void complete_line(int *lines_completed, int measurement_distance, int total_mea
             toc = clock();
         }
         engine(0);
-        sleep(5);
+        sleep(3);
         start_drill();
         measurements_make_in_line++;
         tic = toc;
@@ -153,9 +153,9 @@ void start_navigation(int total_number_lines, int measurement_distance, int tota
     while(lines_completed < total_number_lines){
         complete_line(&lines_completed, measurement_distance, total_measurements_per_line);
 
-        checks_ended_circuit(lines_completed, total_number_lines);
+        // checks_ended_circuit(lines_completed, total_number_lines);
 
-        // make_first_curve();
+        make_first_curve();
         // make_second_curve();
 
         // complete_line(&lines_completed, measurement_distance, total_measurements_per_line);
@@ -179,20 +179,20 @@ int main (int argc, char* argv[]){
 
     uart_init(device);
 
-    // start_navigation(total_number_lines, measurement_distance, total_measurements_per_line);
+    start_navigation(total_number_lines, measurement_distance, total_measurements_per_line);
 
-    make_first_curve();
+    // make_first_curve();
 
-    // int i =0;
+    // float top_sonar_value = 0;
+    // float bottom_sonar_value = 0;
 
-    // for(i=0; i<1000;i++){
-    //     float top_sonar_value = 0;
-    //     float bottom_sonar_value = 0;
+    // int i=0;
+
+    // for(i=0;i<200;i++){
     //     top_sonar_value = read_sonar(0);
     //     bottom_sonar_value = read_sonar(1);
 
-    //     printf("TOP: %f --- BOTTOM: %f\n", top_sonar_value, bottom_sonar_value);
-    //     // sleep(1);
+    //     printf("TOP - %f ----- BOTTOM %f\n", top_sonar_value, bottom_sonar_value);
     // }
 
     fclose(settings_file);
