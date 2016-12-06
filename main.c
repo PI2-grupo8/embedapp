@@ -11,7 +11,7 @@
 #define SAFE_CURVE_DISTANCE 30
 #define CONST_SPEED 6.2
 
-void start_drill(FILE *csv_measurements_file){
+void start_drill(char *csv_file_name){
     float latitude = 0;
     float longitude = 0;
     float air_temperature = 0;
@@ -26,7 +26,9 @@ void start_drill(FILE *csv_measurements_file){
     air_humidity = read_air();
     air_temperature = read_temp();
 
+    FILE *csv_measurements_file = fopen(csv_file_name, "a'");
     fprintf(csv_measurements_file, "LAT: %f0, LON: %f, HUM: %f, AIR_H: %f, AIR_T %f\n", latitude, longitude, absolute_humidity, air_humidity, air_temperature);
+    fclose(csv_measurements_file);
 }
 
 void check_wall_distance(){
@@ -138,7 +140,7 @@ void checks_ended_circuit(int lines_completed, int total_number_lines){
     }
 }
 
-void complete_line(int *lines_completed, int measurement_distance, int total_measurements_per_line, FILE *csv_measurements_file){
+void complete_line(int *lines_completed, int measurement_distance, int total_measurements_per_line, char *csv_file_name){
     // double time = (measurement_distance / CONST_SPEED) * (double)CLOCKS_PER_SEC;
 
     double time = 100000 * measurement_distance;
@@ -154,7 +156,7 @@ void complete_line(int *lines_completed, int measurement_distance, int total_mea
         }
         engine(0);
         sleep(3);
-        // start_drill(csv_measurements_file);
+        start_drill(csv_file_name);
         measurements_make_in_line++;
         tic = toc;
     }
@@ -162,11 +164,11 @@ void complete_line(int *lines_completed, int measurement_distance, int total_mea
     (*lines_completed)++;
 }
 
-void start_navigation(int total_number_lines, int measurement_distance, int total_measurements_per_line, FILE *csv_measurements_file){
+void start_navigation(int total_number_lines, int measurement_distance, int total_measurements_per_line, char *csv_file_name){
     int lines_completed = 0;
 
     while(lines_completed < total_number_lines){
-        complete_line(&lines_completed, measurement_distance, total_measurements_per_line, csv_measurements_file);
+        complete_line(&lines_completed, measurement_distance, total_measurements_per_line, csv_file_name);
 
         // checks_ended_circuit(lines_completed, total_number_lines);
 
@@ -202,6 +204,18 @@ char *create_csv_file_name(){
     return file_name;
 }
 
+void teste(){
+    float top_sonar_value = 0;
+    float bottom_sonar_value = 0;
+    int i=0;
+    for(i=0;i<200;i++){
+        top_sonar_value = read_sonar(0);
+        bottom_sonar_value = read_sonar(1);
+
+        printf("TOP - %f ----- BOTTOM %f\n", top_sonar_value, bottom_sonar_value);
+    }
+}
+
 int main (int argc, char* argv[]){
     int total_number_lines = 0;
     int total_measurements_per_line = 0;
@@ -209,7 +223,8 @@ int main (int argc, char* argv[]){
     char *csv_file_name = create_csv_file_name();
 
     FILE *settings_file = fopen("settings.conf", "r");
-    FILE *csv_measurements_file = fopen(csv_file_name, "a");
+    FILE *csv_measurements_file = fopen(csv_file_name, "w");
+    fclose(csv_measurements_file);
 
     fscanf(settings_file, "%d %d %d", &total_number_lines, &total_measurements_per_line, &measurement_distance);
 
@@ -217,22 +232,13 @@ int main (int argc, char* argv[]){
 
     uart_init(device);
 
-    start_navigation(total_number_lines, measurement_distance, total_measurements_per_line, csv_measurements_file);
+    start_navigation(total_number_lines, measurement_distance, total_measurements_per_line, csv_file_name);
 
-    // make_first_curve();
+    // start_drill(csv_file_name);
 
-    // float top_sonar_value = 0;
-    // float bottom_sonar_value = 0;
-    // int i=0;
-    // for(i=0;i<200;i++){
-    //     top_sonar_value = read_sonar(0);
-    //     bottom_sonar_value = read_sonar(1);
-
-    //     printf("TOP - %f ----- BOTTOM %f\n", top_sonar_value, bottom_sonar_value);
-    // }
+    // teste();
 
     fclose(settings_file);
-    fclose(csv_measurements_file);
 
     uart_end();
 
