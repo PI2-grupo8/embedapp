@@ -78,7 +78,7 @@ float read_sonar(int sonar_id)
 	uint32_t accum = 0;
 	int i;
 
-	static float sonar[2][50] = {{[0 ... 49] 0}, {[0 ... 49] 0}};
+	static float sonar[2][10] = {{[0 ... 9] 0}, {[0 ... 9] 0}};
 	static int read_num = 0;
 
 	switch (sonar_id)
@@ -102,10 +102,10 @@ float read_sonar(int sonar_id)
 	float ret_val = 0;
 	sonar[sonar_id][(read_num++) % 10] = read_var.f_var;
 
-	for (i = 0; i < 50; i++)
+	for (i = 0; i < 10; i++)
 		ret_val += sonar[sonar_id][i];
 
-	return ret_val / 50;
+	return ret_val / 10;
 }
 
 struct accel_data read_accel()
