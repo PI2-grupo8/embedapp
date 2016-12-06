@@ -8,7 +8,7 @@ class Server
     10
   end
 
-  def CMD_CLOSe
+  def CMD_CLOSE
     11
   end
 

@@ -1,5 +1,5 @@
+require 'fileutils'
 require 'ftpd'
-require 'tmpdir'
 
 class Driver
 
@@ -16,12 +16,13 @@ class Driver
   end
 end
 
-dir = '/home/tallys/foo/bar'
+dir = '/usr/share/tortuga/'
 FileUtils::mkdir_p dir
 
 driver = Driver.new(dir)
 server = Ftpd::FtpServer.new(driver)
 server.port = 5000
+server.interface = '0.0.0.0'
 server.start
 puts "Server listening on port #{server.bound_port}"
-gets
+loop {sleep 90}

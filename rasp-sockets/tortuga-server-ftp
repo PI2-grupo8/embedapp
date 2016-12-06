@@ -6,8 +6,8 @@
 case "$1" in
   start)
     echo "Starting Tortuga Server"
-    ruby /usr/share/tortuga/tortuga-server.rb & 2> /dev/null
-    iptables -I INPUT -p tcp --dport 4000 -j ACCEPT
+    ruby /usr/share/tortuga/tortuga-server-ftp.rb & 2> dev/null
+    iptables -I INPUT -p tcp --dport 5000 -j ACCEPT
     ;;
   stop)
     echo "Stopping Tortuga Server"
