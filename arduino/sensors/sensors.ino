@@ -50,7 +50,7 @@
 #include <DHT.h>
 #include <Servo.h>
 
-#undef DEBUG // print meaningful messages to the Serial if defined
+#define DEBUG // print meaningful messages to the Serial if defined
 
 # define HIGRO         '0' // higromter
 # define AIR           '1' // air relative humidity
@@ -264,9 +264,13 @@ void loop() {
         break;
       case PUSH_DRILL:
         move_mabuchi(1, 255, 0);
+        delay(500);
+        move_mabuchi(1, 0, 0);
         break;
       case PULL_DRILL:
         move_mabuchi(1, 255, 1);
+        delay(500);
+        move_mabuchi(1, 0, 0);
         break;
       case STOP_DRILL:
         move_mabuchi(1, 0, 0);
@@ -557,8 +561,14 @@ void move_mabuchi(int mot, int mab_speed, int dir)
 void send_time() {
   unsigned long tmp = millis();
   int i;
-  
+
+  #ifdef DEBUG
+  Serial.print("Time since start: ");
+  Serial.print(tmp);
+  Serial.println(" ms");
+  #else
   for (i = 0; i < 4; i++)
     Serial.write((tmp >> (i*8)) & 0xFF);
+  #endif
 }
 
