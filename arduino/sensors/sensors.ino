@@ -52,8 +52,6 @@
 
 #undef DEBUG // print meaningful messages to the Serial if defined
 
-#ifdef DEBUG
-
 # define HIGRO         '0' // higromter
 # define AIR           '1' // air relative humidity
 # define TEMP          '2' // temperature
@@ -82,39 +80,6 @@
 # define PUSH_DRILL    'k'
 # define STOP_DRILL    'l'
 # define PULL_DRILL    'm'
-
-#else
-
-# define HIGRO          0
-# define AIR            1
-# define TEMP           2
-# define FRONT_SONAR    3
-# define REAR_SONAR     4
-# define ACCEL          5
-# define GYRO           6
-# define GPS_M4         7
-# define GET_TIME       8
-
-# define LEFT_1        'a'
-# define LEFT_2        'b'
-# define LEFT_3        'c'
-# define DN            'd'
-# define RIGHT_1       'e'
-# define RIGHT_2       'f'
-# define RIGHT_3       'g'
-
-# define LEFT_4        'n'
-# define RIGHT_4       'o'
-
-# define FORWARD       'h'
-# define BACKWARD      'i'
-# define STOP          'j'
-
-# define PUSH_DRILL    'k'
-# define STOP_DRILL    'l'
-# define PULL_DRILL    'm'
-
-#endif
 
 /****************** Stepper ***************************************/
 const int step_pin = 11;
@@ -298,10 +263,13 @@ void loop() {
         move_mabuchi(0, 0, 0);
         break;
       case PUSH_DRILL:
+        move_mabuchi(1, 255, 0);
         break;
       case PULL_DRILL:
+        move_mabuchi(1, 255, 1);
         break;
       case STOP_DRILL:
+        move_mabuchi(1, 0, 0);
         break;
       case GET_TIME:
         send_time();

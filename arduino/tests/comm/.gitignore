@@ -1,3 +1,4 @@
 comm_test
 comm_test.o
 sensors.o
+actuators.o comm_test.o rasp_uart.o sensors.o

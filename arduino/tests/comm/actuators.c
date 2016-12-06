@@ -5,7 +5,7 @@
 #include "rasp_uart.h"
 #include "actuators.h"
 
-void direction(char c)
+void direction(int c)
 {
 	struct uart_data tx_buffer = {malloc(1), 1};
 	switch(c)
@@ -43,7 +43,7 @@ void direction(char c)
 	uart_send(&tx_buffer);
 }
 
-void engine(char c)
+void engine(int c)
 {
 	struct uart_data tx_buffer = {malloc(1), 1};
 	switch(c)

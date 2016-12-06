@@ -14,7 +14,7 @@ uint32_t read_higro()
 	struct uart_data rx_buffer = {malloc(2), 2};
 	struct uart_data tx_buffer = {malloc(1), 1};
 
-	tx_buffer.data[0] = 0;
+	tx_buffer.data[0] = '0';
 
 	uart_send(&tx_buffer);
 	uart_recv(&rx_buffer);
@@ -34,7 +34,7 @@ float read_air()
 	uint32_t accum = 0;
 	int i;
 
-	tx_buffer.data[0] = 1;
+	tx_buffer.data[0] = '1';
 	uart_send(&tx_buffer);
 	uart_recv(&rx_buffer);
 
@@ -56,7 +56,7 @@ float read_temp()
 	uint32_t accum = 0;
 	int i;
 
-	tx_buffer.data[0] = 2;
+	tx_buffer.data[0] = '2';
 	uart_send(&tx_buffer);
 	uart_recv(&rx_buffer);
 
@@ -84,10 +84,10 @@ float read_sonar(int sonar_id)
 	switch (sonar_id)
 	{
 	case 0:
-		tx_buffer.data[0] = 3;
+		tx_buffer.data[0] = '3';
 		break;
 	case 1:
-		tx_buffer.data[0] = 4;
+		tx_buffer.data[0] = '4';
 		break;
 	default:
 		return -1;
@@ -117,7 +117,7 @@ struct accel_data read_accel()
 	struct accel_data ad;
 	int i;
 
-	tx_buffer.data[0] = 5;
+	tx_buffer.data[0] = '5';
 	uart_send(&tx_buffer);
 	uart_recv(&rx_buffer);
 
@@ -139,7 +139,7 @@ struct gyro_data read_gyro()
 	struct gyro_data gd;
 	int i;
 
-	tx_buffer.data[0] = 6;
+	tx_buffer.data[0] = '6';
 	uart_send(&tx_buffer);
 	uart_recv(&rx_buffer);
 
@@ -165,7 +165,7 @@ struct gps_data read_gps()
 	struct gps_data gd;
 	int i;
 
-	tx_buffer.data[0] = 7;
+	tx_buffer.data[0] = '7';
 
 	uart_send(&tx_buffer);
 	uart_recv(&rx_buffer);
@@ -199,7 +199,7 @@ float get_time()
 
 	uint32_t accum = 0;
 
-	tx_buffer.data[0] = 8;
+	tx_buffer.data[0] = '8';
 
 	uart_send(&tx_buffer);
 	uart_recv(&rx_buffer);

@@ -1,3 +1,4 @@
 main
 main.o
 rasp_uart.o
+arduino/simulations/video/
