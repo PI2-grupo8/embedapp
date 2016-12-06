@@ -50,7 +50,7 @@
 #include <DHT.h>
 #include <Servo.h>
 
-#define DEBUG // print meaningful messages to the Serial if defined
+#undef DEBUG // print meaningful messages to the Serial if defined
 
 # define HIGRO         '0' // higromter
 # define AIR           '1' // air relative humidity

@@ -35,7 +35,7 @@ int uart_init(const char* device)
     newtio.c_oflag = 0;
     newtio.c_lflag = 0;
 
-    newtio.c_cc[VTIME] = 0;     /* inter-character timer unused */
+    newtio.c_cc[VTIME] = 1;     /* inter-character timer unused */
     newtio.c_cc[VMIN]  = 1;     /* blocking read until 1 character arrives */
 
     tcflush(uart0_filestream, TCIOFLUSH);

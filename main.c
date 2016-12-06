@@ -154,7 +154,7 @@ void complete_line(int *lines_completed, int measurement_distance, int total_mea
         }
         engine(0);
         sleep(3);
-        // start_drill(csv_measurements_file);
+        start_drill(csv_measurements_file);
         measurements_make_in_line++;
         tic = toc;
     }
