@@ -1,0 +1,22 @@
+#! /bin/sh
+# /etc/init.d/tortuga-server
+#
+
+# Variables
+case "$1" in
+  start)
+    echo "Starting Tortuga Server"
+    ruby /usr/share/tortuga/tortuga-server-ftp.rb & 2> dev/null
+    iptables -I INPUT -p tcp --dport 5000 -j ACCEPT
+    ;;
+  stop)
+    echo "Stopping Tortuga Server"
+    pkill ruby
+    ;;
+  *)
+    echo "Usage: /etc/init.d/ {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
