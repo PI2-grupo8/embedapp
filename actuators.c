@@ -64,3 +64,24 @@ void engine(int c)
 	
 }
 
+void drill(int c)
+{
+	struct uart_data tx_buffer = {malloc(1), 1};
+	switch(c)
+	{
+		case -1:
+			tx_buffer.data[0] = 'm';
+			break;
+		case 0:
+			tx_buffer.data[0] = 'l';
+			break;
+		case 1:
+			tx_buffer.data[0] = 'k';
+			break;
+		default:
+			return;
+	}
+	uart_send(&tx_buffer);
+	
+}
+

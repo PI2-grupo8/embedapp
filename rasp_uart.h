@@ -20,6 +20,8 @@
 #   define MODEMDEVICE "/dev/ttyACM0"
 #endif
 
+#define MAX_CALLS 5
+
 struct uart_data {
     char* data;
     size_t length;

@@ -1,8 +1,8 @@
-OBJ = actuators.o sensors.o main.o rasp_uart.o
+OBJ = actuators.o sensors.o tortuga_navigation.o rasp_uart.o
 
-all: main
+all: tortuga_navigation
 
-main: ${OBJ}
+tortuga_navigation: ${OBJ}
 	gcc $^ -o $@
 
 %.o: %.c

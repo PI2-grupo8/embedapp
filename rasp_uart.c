@@ -53,8 +53,9 @@ int uart_send(struct uart_data* data_out){
 int uart_recv(struct uart_data* buffer){
     int total_received = 0;
     int current_received;
+    int call = 0;
 
-    while(total_received < buffer->length){
+    while(total_received < buffer->length && call++ <= MAX_CALLS){
         if((current_received = read(uart0_filestream, (buffer->data + total_received), (buffer->length - total_received))) < 0){
             perror(strerror(errno));
             return errno;

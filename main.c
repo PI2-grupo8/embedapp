@@ -1,17 +1,17 @@
-#include "arduino/tests/comm/rasp_uart.h"
-#include "arduino/tests/comm/sensors.h"
-#include "arduino/tests/comm/actuators.h"
+#include "rasp_uart.h"
+#include "sensors.h"
+#include "actuators.h"
 #include <stdbool.h>
 #include <unistd.h>
 #include <time.h>
 
-#define CLOSE_DISTANCE 2
-#define FAR_DISTANCE 5
+#define CLOSE_DISTANCE 10
+#define FAR_DISTANCE 20
 #define NO_WALL_DISTANCE 70
 #define SAFE_CURVE_DISTANCE 30
 #define CONST_SPEED 6.2
 
-void start_drill(char *csv_file_name){
+void start_drill(char *csv_measurements_file){
     float latitude = 0;
     float longitude = 0;
     float air_temperature = 0;
@@ -22,19 +22,24 @@ void start_drill(char *csv_file_name){
 
     latitude = gps.lat;
     longitude = gps.lon;
+    drill(1);
+    sleep(3);
     absolute_humidity = read_higro();
+    drill(-1);
+    sleep(3);
     air_humidity = read_air();
     air_temperature = read_temp();
 
-    FILE *csv_measurements_file = fopen(csv_file_name, "a'");
-    fprintf(csv_measurements_file, "LAT: %f0, LON: %f, HUM: %f, AIR_H: %f, AIR_T %f\n", latitude, longitude, absolute_humidity, air_humidity, air_temperature);
-    fclose(csv_measurements_file);
+    FILE *file = fopen(csv_measurements_file, "a");
+    fprintf(file, "LAT: %f0, LON: %f, HUM: %f, AIR_H: %f, AIR_T %f\n", latitude, longitude, absolute_humidity, air_humidity, air_temperature);
+    fclose(file);
 }
 
 void check_wall_distance(){
     float top_sonar_value = 0;
     float bottom_sonar_value = 0;
 
+    usleep(20000);
     top_sonar_value = read_sonar(0);
     bottom_sonar_value = read_sonar(1);
 
@@ -66,6 +71,7 @@ void check_wall_distance(){
         // printf("S1: %.3f - S2: %.3f\n", top_sonar_value, bottom_sonar_value);
         direction(-3);
     }
+    //printf("S1: %.3f - S2: %.3f\n", top_sonar_value, bottom_sonar_value);
 }
 
 void make_first_curve(){
@@ -76,18 +82,18 @@ void make_first_curve(){
     while(top_sonar_value < NO_WALL_DISTANCE){
         check_wall_distance();
         top_sonar_value = read_sonar(0);
-        printf("TOP: %f\n", top_sonar_value);
+        //printf("TOP: %f\n", top_sonar_value);
     }
-    printf("TOP CHEGOU NA CURVA 1\n");
+    //printf("TOP CHEGOU NA CURVA 1\n");
     direction(0);
 
     float bottom_sonar_value = 0;
     bottom_sonar_value = read_sonar(1);
     while(bottom_sonar_value < NO_WALL_DISTANCE){
         bottom_sonar_value = read_sonar(1);
-        printf("BOTTOM: %f\n", bottom_sonar_value);
+        //printf("BOTTOM: %f\n", bottom_sonar_value);
     }
-    printf("BOTTOM CHEGOU NA CURVA 1\n");
+    //printf("BOTTOM CHEGOU NA CURVA 1\n");
 
     direction(4);
     sleep(20);
@@ -100,24 +106,24 @@ void make_first_curve(){
     top_sonar_value = read_sonar(0);
     while(top_sonar_value < NO_WALL_DISTANCE){
         top_sonar_value = read_sonar(0);
-        printf("TOP: %f\n", top_sonar_value);
+        //printf("TOP: %f\n", top_sonar_value);
     }
 
-    printf("TOP ENCONTROU PAREDE\n");
+    //printf("TOP ENCONTROU PAREDE\n");
 
     bottom_sonar_value = read_sonar(1);
     while(bottom_sonar_value < NO_WALL_DISTANCE){
         bottom_sonar_value = read_sonar(1);
-        printf("BOTTOM: %f\n", bottom_sonar_value);
+        //printf("BOTTOM: %f\n", bottom_sonar_value);
     }
-    printf("BOTTOM CHEGOU NA CURVA 2\n");
+    //printf("BOTTOM CHEGOU NA CURVA 2\n");
 
     direction(4);
     while(top_sonar_value > FAR_DISTANCE){
         top_sonar_value = read_sonar(0);
-        printf("TOP: %f\n", top_sonar_value);
+        //printf("TOP: %f\n", top_sonar_value);
     }
-    printf("TOP ENCONTROU PAREDE 2\n");
+    //printf("TOP ENCONTROU PAREDE 2\n");
 
     int i=0;
     for(i=0; i<500; i++){
@@ -135,12 +141,12 @@ void checks_ended_circuit(int lines_completed, int total_number_lines){
     if(lines_completed < total_number_lines){
         // Circuit completed
         // Stop veicule
-        printf("Circuit Ended!\n");
+        //printf("Circuit Ended!\n");
         exit(0);
     }
 }
 
-void complete_line(int *lines_completed, int measurement_distance, int total_measurements_per_line, char *csv_file_name){
+void complete_line(int *lines_completed, int measurement_distance, int total_measurements_per_line, char *csv_measurements_file){
     // double time = (measurement_distance / CONST_SPEED) * (double)CLOCKS_PER_SEC;
 
     double time = 100000 * measurement_distance;
@@ -155,8 +161,7 @@ void complete_line(int *lines_completed, int measurement_distance, int total_mea
             toc = clock();
         }
         engine(0);
-        sleep(3);
-        start_drill(csv_file_name);
+        start_drill(csv_measurements_file);
         measurements_make_in_line++;
         tic = toc;
     }
@@ -164,15 +169,15 @@ void complete_line(int *lines_completed, int measurement_distance, int total_mea
     (*lines_completed)++;
 }
 
-void start_navigation(int total_number_lines, int measurement_distance, int total_measurements_per_line, char *csv_file_name){
+void start_navigation(int total_number_lines, int measurement_distance, int total_measurements_per_line, char *csv_measurements_file){
     int lines_completed = 0;
 
     while(lines_completed < total_number_lines){
-        complete_line(&lines_completed, measurement_distance, total_measurements_per_line, csv_file_name);
+        complete_line(&lines_completed, measurement_distance, total_measurements_per_line, csv_measurements_file);
 
-        // checks_ended_circuit(lines_completed, total_number_lines);
+        checks_ended_circuit(lines_completed, total_number_lines);
 
-        make_first_curve();
+     //   make_first_curve();
 
         // complete_line(&lines_completed, measurement_distance, total_measurements_per_line);
 
@@ -204,7 +209,8 @@ char *create_csv_file_name(){
     return file_name;
 }
 
-void teste(){
+void test()
+{
     float top_sonar_value = 0;
     float bottom_sonar_value = 0;
     int i=0;
@@ -212,7 +218,7 @@ void teste(){
         top_sonar_value = read_sonar(0);
         bottom_sonar_value = read_sonar(1);
 
-        printf("TOP - %f ----- BOTTOM %f\n", top_sonar_value, bottom_sonar_value);
+        //printf("TOP - %f ----- BOTTOM %f\n", top_sonar_value, bottom_sonar_value);
     }
 }
 
@@ -233,10 +239,12 @@ int main (int argc, char* argv[]){
     uart_init(device);
 
     start_navigation(total_number_lines, measurement_distance, total_measurements_per_line, csv_file_name);
+    //test();
+    // make_first_curve();
 
-    // start_drill(csv_file_name);
-
-    // teste();
+    //drill(1);
+    //sleep(3);
+    //drill(-1);
 
     fclose(settings_file);
 

@@ -3,5 +3,6 @@
 
 extern void direction(int);
 extern void engine(int);
+extern void drill(int);
 
 #endif
