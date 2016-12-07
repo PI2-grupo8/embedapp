@@ -35,6 +35,8 @@
  *   - PWM: 8
  *   - IN1: 9
  *   - IN2: 10
+ *   - CS: A1
+ *   - STAT: 25
  *   
  *   Stepper (Direction):
  *   - STEP: 11
@@ -49,6 +51,8 @@
 #include <Wire.h>
 #include <DHT.h>
 #include <Servo.h>
+
+#define CS_THRESHOLD 10
 
 #undef DEBUG // print meaningful messages to the Serial if defined
 
@@ -107,6 +111,9 @@ AccelStepper stepper(1, step_pin, dir_pin);
 const int pwm_pin[] = {5, 8};
 const int in1_pin[] = {6, 9};
 const int in2_pin[] = {7, 10};
+
+const int cspin = A1;
+const int statpin = 25;
 
 /****************** higrometer section ****************************/
 // higrometer power supply: 5 or 3.3 VDC
@@ -170,6 +177,11 @@ void setup() {
   pinMode(pwm_pin[1], OUTPUT);
   pinMode(in1_pin[1], OUTPUT);
   pinMode(in2_pin[1], OUTPUT);
+
+  pinMode(statpin, OUTPUT);
+
+  digitalWrite(in1_pin[1], LOW);
+  digitalWrite(in2_pin[1], LOW);
 
   // higrometer setup
   pinMode(higro_pin, INPUT);
@@ -264,16 +276,17 @@ void loop() {
         break;
       case PUSH_DRILL:
         move_mabuchi(1, 255, 0);
-        delay(500);
-        move_mabuchi(1, 0, 0);
+        delay(1000);
+        digitalWrite(statpin, LOW);
         break;
       case PULL_DRILL:
         move_mabuchi(1, 255, 1);
-        delay(500);
-        move_mabuchi(1, 0, 0);
+        delay(1000);
+        digitalWrite(statpin, LOW);
         break;
       case STOP_DRILL:
         move_mabuchi(1, 0, 0);
+        digitalWrite(statpin, HIGH);
         break;
       case GET_TIME:
         send_time();
@@ -282,6 +295,9 @@ void loop() {
         break;
     }
   }
+
+  if (analogRead(cspin) > CS_THRESHOLD)
+    move_mabuchi(1, 0, 0);
 
   if (abs(stepper.distanceToGo()) > 0)
     cur_pos = end_pos - stepper.distanceToGo();
@@ -556,6 +572,8 @@ void move_mabuchi(int mot, int mab_speed, int dir)
   digitalWrite(in1_pin[mot], inPin1);
   digitalWrite(in2_pin[mot], inPin2);
   analogWrite(pwm_pin[mot], mab_speed);
+  
+  digitalWrite(statpin, LOW);
 }
 
 void send_time() {
