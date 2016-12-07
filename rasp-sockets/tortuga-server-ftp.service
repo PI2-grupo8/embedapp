@@ -1,0 +1,13 @@
+[Unit]
+Description=Tortuga Server
+
+[Service]
+Type=simple
+ExecStart=/etc/init.d/tortuga-server-ftp start
+ExecStop=/etc/init.d/tortuga-server-ftp stop
+User=root
+Group=root
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
